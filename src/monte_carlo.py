@@ -5,7 +5,8 @@ from matplotlib.lines import Line2D
 # Stock Price simulation using GBM
 def stock_price_func(S0, t, T, r, sigma, x):
     N = 252 
-    dt = (T - t)/N
+    steps = int((T - t) * N)
+    dt = (T - t)/steps
     Z = np.random.normal(0, 1)
 
     return S0 * np.exp((r - (sigma ** 2)/(2)) * dt  + sigma * np.sqrt(dt) * Z)
@@ -38,7 +39,7 @@ def monte_carlo_func(S, t, T, K, r, sigma, npaths):
     plt.legend(handles = [legend_gbm, legend_mean])
     plt.grid()
     plt.xlabel("tradingdays t")
-    plt.ylabel("price Underlying S(t)")
+    plt.ylabel("price Underlying S(t) in $")
     plt.show()
 
     # Payoff
