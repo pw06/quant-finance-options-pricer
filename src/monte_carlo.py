@@ -32,7 +32,6 @@ def monte_carlo_func(S, t, T, K, r, sigma, npaths):
     # Plot
     for x in range(steps + 1):
         S_mean[x] = S_arr[:, x].mean()
-    print(S_mean[steps])
     plt.plot(range(steps + 1), S_mean[range(steps + 1)], color = "red")
     legend_gbm = Line2D([], [], color = "steelblue", linewidth = 1, label = f"GBM simulation, n = {npaths}")
     legend_mean = Line2D([], [], color = "red", linewidth = 1, label = f"Mean Underlying")

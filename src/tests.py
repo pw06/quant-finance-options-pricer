@@ -15,8 +15,8 @@ def mc_bs_conv(S, t, T, K, r, sigma):
         sim_price = monte_carlo_func(S, t, T, K ,r , sigma, x[i])[1]
         dif[i] = np.abs(ana_price - sim_price)
         end = time.time()
-        print(f"Absolute value of difference: {dif[i]} seconds")
-        print(f"Time needed for simulation: {end - start:.2f}")
+        print(f"Absolute value of difference: {dif[i]:.3f} $")
+        print(f"Time needed for simulation: {end - start:.2f} seconds")
     plt.plot(x, dif[range(len(x))], marker = ".", linestyle = "none", color = "steelblue", label = "Difference between Black-Scholes and Monte-Carlo")
     plt.grid()
     plt.legend()
