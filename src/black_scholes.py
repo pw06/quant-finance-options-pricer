@@ -5,7 +5,7 @@ def phi(x):
     return 0.5 * (1 + erf(x / np.sqrt(2)))
 
 def var_phi(x):
-    return 1/np.sqrt(2 * np.pi()) * np.exp(-(x**2)/2)
+    return 1/np.sqrt(2 * np.pi) * np.exp(-(x**2)/2)
 
 # Black-Scholes call price
 def black_scholes_call(S, t, T, K, r, sigma):

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
 # Stock Price simulation using GBM
-def stock_price_func(S0, t, T, r, sigma, x):
+def stock_price_func(S0, t, T, r, sigma):
     N = 252 
     steps = int((T - t) * N)
     dt = (T - t)/steps
@@ -24,7 +24,7 @@ def monte_carlo_func(S, t, T, K, r, sigma, npaths):
         S0 = S
         S_arr[(i, 0)] = S0
         for x in range(1, steps + 1):
-            S_arr[(i, x)] = stock_price_func(S_arr[i, x - 1], t, T, r, sigma, x)
+            S_arr[(i, x)] = stock_price_func(S_arr[i, x - 1], t, T, r, sigma)
         po_arr[i] = np.maximum(S_arr[i, steps] - K, 0)
 
         plt.plot(range(steps + 1), S_arr[i,range(steps + 1)], color = "steelblue", linewidth = "0.1")
