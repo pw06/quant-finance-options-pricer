@@ -6,7 +6,7 @@ sys.path.append(str(src_path))
 import numpy as np
 import matplotlib.pyplot as plt
 from black_scholes import black_scholes_call
-from monte_carlo import monte_carlo_func
+from monte_carlo import monte_carlo_func, plot_mc
 from finite_dif import opt_price
 import time
 
@@ -18,8 +18,10 @@ def mc_bs_conv(S, t, T, K, r, sigma):
     print(f"Call price via Black-Scholes: {ana_price:.2f}")
     for i in range(len(x)):
         start = time.time()
-        sim_price = monte_carlo_func(S, t, T, K ,r , sigma, x[i])[1]
+        tup = monte_carlo_func(S, t, T, K ,r , sigma, x[i])
+        sim_price = tup[1]
         dif[i] = np.abs(ana_price - sim_price)
+        plot_mc(tup[2])
         end = time.time()
         print(f"Absolute value of difference: {dif[i]:.3f} $")
         print(f"Time needed for simulation: {end - start:.2f} seconds")
@@ -45,4 +47,29 @@ def fd_bs_conv(S, t, T, r, K, sigma):
     plt.plot(x, dif[range(len(x))], marker = ".", linestyle = "none", color = "steelblue", label = "Difference between Analytical and Numerical Solution")
     plt.grid()
     plt.legend()
+    plt.show()
+
+def fd_mc_bs(S, t, T, r, K, sigma):
+    mc_in = [10, 100, 1000, 5000, 10000, 15000, 25000, 50000]
+    fd_in = [10, 50, 100, 250, 500, 750, 1000, 1500]
+    mc_price = np.zeros(len(mc_in))
+    fd_price = np.zeros(len(fd_in))
+
+    ana_price = black_scholes_call(S, t, T, K, r, sigma)
+
+    for i in range(len(mc_in)):
+        mc_price[i] = monte_carlo_func(S, t, T, K, r, sigma, mc_in[i])[1]
+        print("mc:", mc_in[i])
+
+    for i in range(len(fd_in)):
+        fd_price[i] = opt_price(S, t, T, r, K, sigma, fd_in[i], fd_in[i] ** 2)
+        print("fd:", fd_in[i])
+
+    plt.axhline(y=ana_price, color="steelblue", label = "Black-Scholes analytical")
+    plt.plot(range(1, len(fd_price) + 1), fd_price, color = "red", marker = ".", linestyle = "none", label = "Black-Scholes numerical")
+    plt.plot(range(1, len(mc_price) + 1), mc_price, color = "green", marker = ".", linestyle = "none", label = "Monte-Carlo")
+    plt.legend()
+    plt.grid()
+    plt.xlabel("array intervals")
+    plt.ylabel("call price in $")
     plt.show()

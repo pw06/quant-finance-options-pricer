@@ -22,19 +22,34 @@ def monte_carlo_func(S, t, T, K, r, sigma, npaths):
 
     # Payoff
     mc_price = payoff_mean * np.exp(r * (t - T))
-    print(f"expected payoff: {payoff_mean:.2f}$ \nMonte Carlo call price: {mc_price:.2f}$")
 
     # Logging stock price mean
     for x in range(steps + 1):
         S_mean[x] = S_a[:, x].mean()
 
+
+    return (payoff_mean, mc_price, S_a, S_mean)
+
+
+
+
     # Plots
-    for i in range(npaths):
-        plt.plot(range(0, steps + 1), S_a[i, :], color = "steelblue", linewidth = 0.2)
+def plot_mc(S):
+    # Variable definition
+    n = len(S)
+    st = len(S[0, :])
+    S_mean = np.zeros(st)
 
-    plt.plot(range(steps + 1), S_mean[range(steps + 1)], color = "red")
+    # Logging stock price mean
+    for x in range(st):
+        S_mean[x] = S[:, x].mean()
 
-    legend_gbm = Line2D([], [], color = "steelblue", linewidth = 1, label = f"GBM simulation, n = {npaths}")
+    for i in range(n):
+        plt.plot(range(0, len(S[0, :])), S[i, :], color = "steelblue", linewidth = 0.2)
+
+    plt.plot(range(st), S_mean[range(st)], color = "red")
+
+    legend_gbm = Line2D([], [], color = "steelblue", linewidth = 1, label = f"GBM simulation, n = {n}")
     legend_mean = Line2D([], [], color = "red", linewidth = 1, label = f"Mean Underlying")
 
     plt.legend(handles = [legend_gbm, legend_mean])
@@ -42,10 +57,4 @@ def monte_carlo_func(S, t, T, K, r, sigma, npaths):
     plt.xlabel("tradingdays t")
     plt.ylabel("price underlying S(t) in $")
     plt.show()
-
-
-    return (payoff_mean, mc_price)
-
-
-
 
