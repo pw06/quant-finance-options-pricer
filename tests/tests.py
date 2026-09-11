@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+src_path = Path(__file__).resolve().parent.parent / "src"
+sys.path.append(str(src_path))
+
 import numpy as np
 import matplotlib.pyplot as plt
 from black_scholes import black_scholes_call

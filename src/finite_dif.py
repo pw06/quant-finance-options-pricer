@@ -2,46 +2,50 @@ import numpy as np
 import math
 
 def fin_dif_mesh_expl(T, r, K, sigma, M, N):
+    #Variable definition
     S_max = 3 * K
     dt = T / N
     dS = S_max / (M - 1)
 
-    # S-grid
+    # Grids and meshes
     S = np.arange(M) * dS
 
-    # V-mesh
     V = np.zeros((N + 1, M))
 
-    # Initial condition
+    # Initial and boundary conditions
     V[-1, :] = np.maximum(S - K, 0)
 
-    # Lower boundary
     for j in range(N + 1):
         V[j, 0] = 0
 
-    # Upper boundary
     for j in range(N + 1):
         V[j, M - 1] = S_max  - K * np.exp(-r * (T - dt * j))
 
+    # Calculation of mesh values
     i_arr = np.arange(1, M - 1)
+
     a_i = dt * (0.5 * (sigma * i_arr) ** 2 - 0.5 * r * i_arr)
     b_i = 1 - dt * ((sigma * i_arr) ** 2 + r)
     c_i = dt * (0.5 * (sigma * i_arr) ** 2 + 0.5 * r * i_arr)
 
     for j in range(N - 1, -1, -1):
         V[j, 1:-1] = (a_i * V[j + 1, :-2] + b_i * V[j + 1, 1:-1] + c_i * V[j + 1, 2:])
+
+
     return V
 
 
 def opt_price(S, t, T, r, K, sigma, M, N):
+    # Variable defintion
     V_out = 0
-    V = fin_dif_mesh_expl(T, r, K, sigma, M, N) 
     S_max = 3 * K
     dt = T / N
     dS = S_max / (M - 1)
     i = t / dt
     j = S / dS
+    V = fin_dif_mesh_expl(T, r, K, sigma, M, N)
 
+    # Interpolation
     i_loc = (i % 1 == 0)
     j_loc = (j % 1 == 0)
 
