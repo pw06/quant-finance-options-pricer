@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-def fin_dif_mesh_expl(T, r, K, sigma, M, N):
+def fin_dif_mesh_expl(T, K, r, sigma, M, N):
     #Variable definition
     S_max = 3 * K
     dt = T / N
@@ -35,7 +35,7 @@ def fin_dif_mesh_expl(T, r, K, sigma, M, N):
     return V
 
 
-def opt_price(S, t, T, r, K, sigma, M, N):
+def opt_price(S, t, T, K, r, sigma, M, N):
     # Variable defintion
     V_out = 0
     S_max = 3 * K
@@ -43,7 +43,7 @@ def opt_price(S, t, T, r, K, sigma, M, N):
     dS = S_max / (M - 1)
     i = t / dt
     j = S / dS
-    V = fin_dif_mesh_expl(T, r, K, sigma, M, N)
+    V = fin_dif_mesh_expl(T, K, r, sigma, M, N)
 
     # Interpolation
     i_loc = (i % 1 == 0)

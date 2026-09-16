@@ -11,16 +11,18 @@ from finite_dif import opt_price
 import time
 
 # Convergence of Monte-Carlo Call Price towards Analytical Solution via Black Scholes using GBM
-def mc_bs_conv(S, t, T, K, r, sigma):
+def mc_bs_conv(S, t, T, K, r, sigma, show_paths = False):
+    tau = T - t
     x = [1, 10, 100, 1000, 5000, 10000, 15000, 20000, 30000, 40000, 50000]
     dif = np.zeros(len(x))
-    ana_price = black_scholes_call(S, t, T, K, r, sigma)
+    ana_price = black_scholes_call(S, tau, K, r, sigma)
     print(f"Call price via Black-Scholes: {ana_price:.2f}")
     for i in range(len(x)):
         start = time.time()
         tup = monte_carlo_func(S, t, T, K ,r , sigma, x[i])
         sim_price = tup[1]
-        dif[i] = np.abs(ana_price - sim_price)
+        if show_paths:
+            dif[i] = np.abs(ana_price - sim_price)
         plot_mc(tup[2])
         end = time.time()
         print(f"Absolute value of difference: {dif[i]:.3f} $")
@@ -31,14 +33,15 @@ def mc_bs_conv(S, t, T, K, r, sigma):
     plt.show()
 
 #Convergence of numerical solution of Black Scholes towards its analytical solution
-def fd_bs_conv(S, t, T, r, K, sigma):
+def fd_bs_conv(S, t, T, K, r, sigma):
+    tau = T - t
     x = [10, 20, 50, 100, 200, 500, 1000]
     dif = np.zeros(len(x))
-    ana_price = black_scholes_call(S, t, T, K, r, sigma)
+    ana_price = black_scholes_call(S, tau, K, r, sigma)
     print(f"Analytical BS price: {ana_price:.6f}")
     for i in range(len(x)):
         start = time.time()
-        num_price = opt_price(S, t, T, r, K, sigma, x[i], x[i] ** 2)
+        num_price = opt_price(S, t, T, K, r, sigma, x[i], x[i] ** 2)
         stop = time.time()
         dif[i] = np.abs(ana_price - num_price)
         print(f"FD price: {num_price:.6f}")
@@ -49,20 +52,21 @@ def fd_bs_conv(S, t, T, r, K, sigma):
     plt.legend()
     plt.show()
 
-def fd_mc_bs(S, t, T, r, K, sigma):
+def fd_mc_bs(S, t, T, K, r, sigma):
+    tau = T - t
     mc_in = [10, 100, 1000, 5000, 10000, 15000, 25000, 50000]
     fd_in = [10, 50, 100, 250, 500, 750, 1000, 1500]
     mc_price = np.zeros(len(mc_in))
     fd_price = np.zeros(len(fd_in))
 
-    ana_price = black_scholes_call(S, t, T, K, r, sigma)
+    ana_price = black_scholes_call(S, tau, K, r, sigma)
 
     for i in range(len(mc_in)):
         mc_price[i] = monte_carlo_func(S, t, T, K, r, sigma, mc_in[i])[1]
         print("mc:", mc_in[i])
 
     for i in range(len(fd_in)):
-        fd_price[i] = opt_price(S, t, T, r, K, sigma, fd_in[i], fd_in[i] ** 2)
+        fd_price[i] = opt_price(S, t, T, K, r, sigma, fd_in[i], fd_in[i] ** 2)
         print("fd:", fd_in[i])
 
     plt.axhline(y=ana_price, color="steelblue", label = "Black-Scholes analytical")
