@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 from black_scholes import black_scholes_call
 from monte_carlo import monte_carlo_func, plot_mc
 from finite_dif import opt_price
+from implied_vol import implied_volatility_call, plot_vol
+from market_data import get_market_data
 import time
 
 # Convergence of Monte-Carlo Call Price towards Analytical Solution via Black Scholes using GBM
@@ -17,16 +19,19 @@ def mc_bs_conv(S, t, T, K, r, sigma, show_paths = False):
     dif = np.zeros(len(x))
     ana_price = black_scholes_call(S, tau, K, r, sigma)
     print(f"Call price via Black-Scholes: {ana_price:.2f}")
+    print("----------------------------------------------\n\n")
     for i in range(len(x)):
         start = time.time()
         tup = monte_carlo_func(S, t, T, K ,r , sigma, x[i])
         sim_price = tup[1]
-        if show_paths:
-            dif[i] = np.abs(ana_price - sim_price)
-        plot_mc(tup[2])
+        dif[i] = np.abs(ana_price - sim_price)
+        if show_paths == True:
+            plot_mc(tup[2])
         end = time.time()
+        print(f"Monte-Carlo evaluated price: {sim_price:.2f} with n = {x[i]}")
         print(f"Absolute value of difference: {dif[i]:.3f} $")
         print(f"Time needed for simulation: {end - start:.2f} seconds")
+        print("\n\n")
     plt.plot(x, dif[range(len(x))], marker = ".", linestyle = "none", color = "steelblue", label = "Difference between Black-Scholes and Monte-Carlo")
     plt.grid()
     plt.legend()
@@ -38,7 +43,10 @@ def fd_bs_conv(S, t, T, K, r, sigma):
     x = [10, 20, 50, 100, 200, 500, 1000]
     dif = np.zeros(len(x))
     ana_price = black_scholes_call(S, tau, K, r, sigma)
+
     print(f"Analytical BS price: {ana_price:.6f}")
+    print("-----------------------------------------\n\n")
+
     for i in range(len(x)):
         start = time.time()
         num_price = opt_price(S, t, T, K, r, sigma, x[i], x[i] ** 2)
@@ -47,11 +55,15 @@ def fd_bs_conv(S, t, T, K, r, sigma):
         print(f"FD price: {num_price:.6f}")
         print(f"Absolute value of difference: {dif[i]:.3f} $")
         print(f"Time needed for solution of numerical method: {stop - start:.2f} seconds")
+        print("\n\n")
     plt.plot(x, dif[range(len(x))], marker = ".", linestyle = "none", color = "steelblue", label = "Difference between Analytical and Numerical Solution")
+    plt.xlabel("meshparameter M")
+    plt.ylabel("absolute difference abs(price_ana - price_num)")
     plt.grid()
     plt.legend()
     plt.show()
 
+# Convergence of both methods(Monte Carlo and numerical solution) towards analytical solution
 def fd_mc_bs(S, t, T, K, r, sigma):
     tau = T - t
     mc_in = [10, 100, 1000, 5000, 10000, 15000, 25000, 50000]
@@ -60,20 +72,35 @@ def fd_mc_bs(S, t, T, K, r, sigma):
     fd_price = np.zeros(len(fd_in))
 
     ana_price = black_scholes_call(S, tau, K, r, sigma)
-
+    print(f"Analytical Black-Scholes price: {ana_price}")
+    print("-----------------------------------------\n\n")
     for i in range(len(mc_in)):
         mc_price[i] = monte_carlo_func(S, t, T, K, r, sigma, mc_in[i])[1]
-        print("mc:", mc_in[i])
+        print(f"Montecarlo price: {mc_price[i]} with n_paths = {mc_in[i]}")
+
+    print("\n\n")
 
     for i in range(len(fd_in)):
         fd_price[i] = opt_price(S, t, T, K, r, sigma, fd_in[i], fd_in[i] ** 2)
-        print("fd:", fd_in[i])
+        print(f"Finite difference price: {fd_price[i]} with M = {fd_in[i]} and N = {fd_in[i] ** 2}")
 
     plt.axhline(y=ana_price, color="steelblue", label = "Black-Scholes analytical")
     plt.plot(range(1, len(fd_price) + 1), fd_price, color = "red", marker = ".", linestyle = "none", label = "Black-Scholes numerical")
     plt.plot(range(1, len(mc_price) + 1), mc_price, color = "green", marker = ".", linestyle = "none", label = "Monte-Carlo")
+    plt.title("Convergence of three independent pricing methods")
     plt.legend()
     plt.grid()
     plt.xlabel("array intervals")
     plt.ylabel("call price in $")
     plt.show()
+
+
+
+#Plots calculated and given implied volatility for given ticker, riskfree rate, dividend and targeted time to expiry
+def plot_volatility_smile(ticker_str, r, q = 0.0, target_tau = None):
+    strikes, ivs, tau, S = implied_volatility_call(ticker_str, r, q, target_tau)
+    _, _, _, option_chain, _ = get_market_data(ticker_str, target_tau)
+    ref = (option_chain["strike"].to_numpy(), option_chain["impliedVolatility"].to_numpy())
+    print(f"S = {S:.2f}, tau = {tau:.4f}")
+    plot_vol(strikes, ivs, reference=ref)
+

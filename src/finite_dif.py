@@ -70,4 +70,5 @@ def opt_price(S, t, T, K, r, sigma, M, N):
         V_i2 = V[i_2, j_1] + (V[i_2, j_2] - V[i_2, j_1]) * (j - j_1)
         V_out = V_i1 + (V_i2 - V_i1) * (i - i_1)
 
+
     return V_out

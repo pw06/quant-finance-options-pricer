@@ -1,55 +1,47 @@
-from black_scholes import black_scholes_call, vega
-from market_data import get_market_data
 import numpy as np
 import matplotlib.pyplot as plt
-
-def implied_vol(str_ticker: str, r, n = 100, tol = 1e-8):
-    data = get_market_data(str_ticker)
-
-
-    tau = data[1]
-    S = data[2]
-    option_chain = data[3]
-    call_price_list = data[4]
-
-    plt_in = np.zeros((2, len(call_price_list)))
+from scipy.optimize import brentq
+from market_data import get_market_data
+from black_scholes import black_scholes_call
 
 
+def implied_volatility_call(ticker_str, r, q=0.0, target_tau=None):
 
-    
-    for i, C_market in enumerate(call_price_list):
+    _, tau, S, option_chain, call_prices = get_market_data(ticker_str, target_tau)
 
-        sigma = 0.5
-        K = option_chain["strike"].iloc[i]
+    strikes = option_chain["strike"].to_numpy()
+    market_prices = call_prices.to_numpy()
+    n = len(market_prices)
+    implied_vols = np.full(n, np.nan)
 
-        for run in range(n):
-            C_calc = black_scholes_call(S, tau, K, r, sigma)
-            error = C_calc - C_market
-            if abs(error) < tol:
-                break
+    # Optimization of every strikeprice
+    for i in range(n):
+        K = strikes[i]
+        C_market = market_prices[i]
 
-            vega_val = vega(S, tau, K, r, sigma)
+        def objective(sigma):
+            return black_scholes_call(S, tau, K, r, sigma, q) - C_market
 
-            if abs(vega_val) < 1e-10:
-                print(f"Vega too small for Newton-Raphson.\nVega value: {vega_val}\nSigma value: {sigma}\nMarket value: {C_market}")
-                break
-            
-            sigma = sigma - (error) / vega_val
-            if sigma <= 0:
-                print(f"Invalid sigma = {sigma} for K = {K}")
-                break
-        plt_in[0, i] = K
-        plt_in[1, i] = sigma
-        i += 1
+        try:
+            implied_vols[i] = brentq(objective, 1e-6, 5.0)
+        except ValueError:
+            implied_vols[i] = np.nan
 
 
-    return plt_in
+    return strikes, implied_vols, tau, S
 
-def plot_vol(plt_in):
-    plt.plot(plt_in[0, :], plt_in[1, :], color = "steelblue", linewidth = 0.8, label = "Calculated implied volatility")
+
+def plot_vol(strikes, implied_vols, reference=None):
+    plt.plot(strikes, implied_vols, color="steelblue",linestyle = " " , marker = ".", linewidth=0.8, label="calculated implied volatility")
+
+    if reference is not None:
+        ref_strikes, ref_iv = reference
+        plt.plot(ref_strikes, ref_iv, color="red", linewidth=0.8, label="yfinance implied volatility")
+
     plt.xlabel(r"strike price $K$")
     plt.ylabel(r"implied volatility $\sigma$")
+    plt.legend()
     plt.grid()
     plt.show()
 
-plot_vol(implied_vol("^SPX", 0.05))
+
