@@ -56,36 +56,6 @@ def implied_vol_iter(iterations):
     return dataset
 
 
-def plot_vol3D(iterations, ticker_stock = None):
-    id = 0
-    data = implied_vol_iter(iterations)
-    tau_arr = np.zeros(iterations)
-    strike_arrays = np.zeros(iterations)
-    implied_vol_arr = np.zeros(iterations)
-
-    tau_list, strike_list, vol_list = [], [], []
-
-    for target_tau, (strikes, vols, tau, S) in data.items():
-        mask = ~np.isnan(vols)
-        tau_list.extend([tau] * mask.sum())
-        strike_list.extend(strikes[mask])
-        vol_list.extend(vols[mask])
-
-    print(f"Punkte: tau={len(tau_list)}, strikes={len(strike_list)}, vols={len(vol_list)}")
-    fig = plt.figure(figsize=(10, 7))
-    ax = fig.add_subplot(projection="3d")
-    sc = ax.scatter(strike_list, tau_list, vol_list, c=vol_list, cmap="viridis", s=5)
-
-    fig = plt.figure(figsize=(10, 7))
-    ax = fig.add_subplot(projection="3d")
-    sc = ax.scatter(strike_list, tau_list, vol_list, c=vol_list, cmap="viridis", s=5)
-
-    ax.set_xlabel(r"strike $K$")
-    ax.set_ylabel(r"time to maturity $\tau$")
-    ax.set_zlabel(r"implied volatility $\sigma$")
-    fig.colorbar(sc, label=r"$\sigma$", shrink=0.6)
-    plt.show()
-
 
 
 
